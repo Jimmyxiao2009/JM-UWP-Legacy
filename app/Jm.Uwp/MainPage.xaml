@@ -1,0 +1,186 @@
+<Page
+    x:Class="Jm.Uwp.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="using:Jm.Core"
+    xmlns:local="using:Jm.Uwp"
+    mc:Ignorable="d"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <!-- 带图卡片：封面 + 标题 + 作者。点击进详情。 -->
+        <DataTemplate x:Key="AlbumCard" x:DataType="core:JmAlbumStub">
+            <Grid Width="150" Height="250" Margin="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="200" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" Background="#22000000">
+                    <Image Source="{x:Bind CoverUrl, Converter={StaticResource UrlToImage}}" Stretch="UniformToFill" />
+                </Border>
+                <StackPanel Grid.Row="1" Margin="2,4,2,0">
+                    <TextBlock Text="{x:Bind Name}" FontSize="12" MaxLines="2" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind Author}" FontSize="11" Foreground="Gray" MaxLines="1" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <!-- 下载卡片：离线封面(本地第一页) + 章节名 + 信息 + 右上角删除。 -->
+        <DataTemplate x:Key="DownloadCard" x:DataType="local:DownloadEntry">
+            <Grid Width="150" Height="250" Margin="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="200" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" Background="#22000000">
+                    <Image Source="{x:Bind Thumb, Converter={StaticResource UrlToImage}}" Stretch="UniformToFill" />
+                </Border>
+                <Button Grid.Row="0" Content="✕" FontSize="12" Padding="6,2" Margin="0"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Background="#99000000" Foreground="White"
+                        Tag="{x:Bind ChapterId}" Click="DeleteDownload_Click" />
+                <StackPanel Grid.Row="1" Margin="2,4,2,0">
+                    <TextBlock Text="{x:Bind Display}" FontSize="12" MaxLines="2" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind SubText}" FontSize="11" Foreground="Gray" MaxLines="1" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Pivot Grid.Row="0" x:Name="RootPivot" SelectionChanged="Pivot_SelectionChanged" Title="JM Reader">
+
+            <!-- 搜索 -->
+            <PivotItem Header="搜索">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- 大搜索框 -->
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="QueryBox" Grid.Column="0" PlaceholderText="搜索关键词…"
+                                 FontSize="18" MinHeight="44" VerticalContentAlignment="Center"
+                                 KeyDown="QueryBox_KeyDown" />
+                        <Button x:Name="SearchButton" Grid.Column="1" Content="搜索"
+                                MinHeight="44" MinWidth="64" Margin="8,0,0,0"
+                                FontSize="16" Click="SearchButton_Click" />
+                    </Grid>
+
+                    <!-- 排序 + 高级 + 视图切换 -->
+                    <Grid Grid.Row="1" Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="OrderBox" Grid.Column="0" SelectedIndex="0" Width="124"
+                                  SelectionChanged="OrderBox_SelectionChanged">
+                            <ComboBoxItem Content="综合" />
+                            <ComboBoxItem Content="最新" />
+                            <ComboBoxItem Content="最多点击" />
+                            <ComboBoxItem Content="最多爱心" />
+                            <ComboBoxItem Content="最多图片" />
+                        </ComboBox>
+                        <ToggleButton x:Name="AdvToggle" Grid.Column="1" Content="高级" Margin="8,0,0,0"
+                                      Checked="AdvToggle_Toggled" Unchecked="AdvToggle_Toggled" />
+                        <Button x:Name="ViewToggle" Grid.Column="3" Content="列表" Width="56"
+                                Click="ViewToggle_Click" />
+                    </Grid>
+
+                    <!-- 高级面板：包含 / 排除 标签（默认隐藏） -->
+                    <StackPanel x:Name="AdvPanel" Grid.Row="2" Visibility="Collapsed" Margin="0,0,0,8">
+                        <TextBox x:Name="IncludeBox" PlaceholderText="包含标签（空格分隔，如：巨乳 校园）"
+                                 Margin="0,0,0,6" KeyDown="QueryBox_KeyDown" />
+                        <TextBox x:Name="ExcludeBox" PlaceholderText="排除标签（空格分隔，如：人妻 3D）"
+                                 KeyDown="QueryBox_KeyDown" />
+                        <TextBlock Text="提示：关键词、包含、排除会一起提交；排除项以“-”发送给服务器。"
+                                   FontSize="11" Foreground="Gray" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <!-- 结果 -->
+                    <Grid Grid.Row="3">
+                        <ProgressRing x:Name="Busy" Width="48" Height="48" IsActive="False"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock x:Name="StatusText" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   TextWrapping="Wrap" TextAlignment="Center" Foreground="Gray" Text="输入关键词开始搜索" />
+                        <GridView x:Name="ResultGrid" IsItemClickEnabled="True" ItemClick="Card_ItemClick"
+                                  ItemTemplate="{StaticResource AlbumCard}" Visibility="Visible" />
+                        <ListView x:Name="ResultList" IsItemClickEnabled="True" ItemClick="Card_ItemClick" Visibility="Collapsed">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="core:JmAlbumStub">
+                                    <StackPanel Margin="0,6">
+                                        <TextBlock Text="{x:Bind Name}" FontSize="16" TextWrapping="Wrap" />
+                                        <TextBlock FontSize="12" Foreground="Gray">
+                                            <Run Text="JM" /><Run Text="{x:Bind Id}" />
+                                            <Run Text="  " /><Run Text="{x:Bind Author}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </Grid>
+            </PivotItem>
+
+            <!-- 收藏 -->
+            <PivotItem Header="收藏">
+                <Grid>
+                    <TextBlock x:Name="FavEmpty" Text="还没有收藏" Foreground="Gray"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                    <GridView x:Name="FavGrid" IsItemClickEnabled="True" ItemClick="Card_ItemClick"
+                              ItemTemplate="{StaticResource AlbumCard}" />
+                </Grid>
+            </PivotItem>
+
+            <!-- 历史 -->
+            <PivotItem Header="历史">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Button Grid.Row="0" Content="清空历史" Click="ClearHistory_Click" HorizontalAlignment="Right" Margin="0,0,0,8" />
+                    <Grid Grid.Row="1">
+                        <TextBlock x:Name="HistEmpty" Text="还没有浏览历史" Foreground="Gray"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                        <GridView x:Name="HistGrid" IsItemClickEnabled="True" ItemClick="Card_ItemClick"
+                                  ItemTemplate="{StaticResource AlbumCard}" />
+                    </Grid>
+                </Grid>
+            </PivotItem>
+
+            <!-- 下载 -->
+            <PivotItem Header="下载">
+                <Grid>
+                    <TextBlock x:Name="DlEmpty" Text="还没有下载（在阅读器里点“下载本章”）" Foreground="Gray"
+                               TextWrapping="Wrap" TextAlignment="Center"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                    <GridView x:Name="DlGrid" IsItemClickEnabled="True" ItemClick="Download_ItemClick"
+                              ItemTemplate="{StaticResource DownloadCard}" />
+                </Grid>
+            </PivotItem>
+        </Pivot>
+
+        <!-- 底部命令栏：书签 / 设置（从搜索行挪下来，给搜索框腾地方） -->
+        <CommandBar Grid.Row="1">
+            <AppBarButton Icon="Favorite" Label="书签" Click="Bookmarks_Click" />
+            <AppBarButton Icon="Setting" Label="设置" Click="Settings_Click" />
+        </CommandBar>
+    </Grid>
+</Page>

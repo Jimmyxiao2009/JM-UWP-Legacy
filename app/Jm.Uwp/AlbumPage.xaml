@@ -1,0 +1,49 @@
+<Page
+    x:Class="Jm.Uwp.AlbumPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="using:Jm.Core"
+    mc:Ignorable="d"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Margin="12,12,12,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,8">
+            <Button Content="← 返回" Click="Back_Click" HorizontalAlignment="Left" />
+            <Button x:Name="FavButton" Content="☆ 收藏" Click="Fav_Click" HorizontalAlignment="Right" />
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="4,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Width="120" Height="160" Margin="0,0,12,0">
+                <Image x:Name="CoverImage" Stretch="UniformToFill" />
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Top">
+                <TextBlock x:Name="TitleText" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
+                <TextBlock x:Name="MetaText" FontSize="12" Foreground="Gray" Margin="0,4,0,0" TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <ProgressRing x:Name="Busy" Width="48" Height="48" IsActive="False"
+                          HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ListView x:Name="ChapterList" IsItemClickEnabled="True" ItemClick="ChapterList_ItemClick">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="core:JmSeries">
+                        <TextBlock Text="{x:Bind Name}" FontSize="16" Margin="0,8" TextWrapping="Wrap" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Grid>
+</Page>

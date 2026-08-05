@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- netstandard1.4：官方对应 UWP 10.0.10240，能上真正的 Windows Phone(Win10 Mobile)。
+         注意不能用 2.0——那需要 UWP 16299，而 Win10 Mobile 最高只到 15254。 -->
+    <TargetFramework>netstandard1.4</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 选 Newtonsoft 而非 System.Text.Json：经典 UWP/.NET Native 上前者开箱即用 -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <!-- VS2017 无法编译本 SDK 风格工程，故把编好的 DLL 拷到仓库根 lib/，
+       供经典 UWP 工程以二进制方式引用。每次 dotnet build 自动刷新。 -->
+  <Target Name="CopyToLib" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetDir)Jm.Core.dll"
+          DestinationFolder="$(MSBuildProjectDirectory)\..\..\lib"
+          SkipUnchangedFiles="false" />
+  </Target>
+
+</Project>

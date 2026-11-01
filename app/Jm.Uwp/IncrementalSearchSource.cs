@@ -16,6 +16,7 @@ namespace Jm.Uwp
         private readonly JmClient _client;
         private readonly string _query;
         private readonly string _orderBy;
+        private readonly string _category;
         private int _nextPage = 1;
         private int _total = -1;
         private bool _loading;
@@ -24,11 +25,12 @@ namespace Jm.Uwp
         /// <summary>状态回调（搜索中/加载更多/共N条/错误），供页面显示。</summary>
         public Action<string> StatusChanged;
 
-        public IncrementalSearchSource(JmClient client, string query, string orderBy = null)
+        public IncrementalSearchSource(JmClient client, string query, string orderBy = null, string category = null)
         {
             _client = client;
             _query = query;
             _orderBy = orderBy;
+            _category = category;
         }
 
         public bool HasMoreItems => !_noMore;
@@ -47,7 +49,7 @@ namespace Jm.Uwp
                 JmApiResult r;
                 try
                 {
-                    r = await _client.SearchAsync(_query, _nextPage, _orderBy);
+                    r = await _client.SearchAsync(_query, _nextPage, _orderBy, _category);
                 }
                 catch (JmException)
                 {
@@ -58,7 +60,7 @@ namespace Jm.Uwp
                         StatusChanged?.Invoke("网络不通或被拦截（可能需要代理/TUN）");
                         return new LoadMoreItemsResult { Count = 0 };
                     }
-                    r = await _client.SearchAsync(_query, _nextPage, _orderBy);
+                    r = await _client.SearchAsync(_query, _nextPage, _orderBy, _category);
                 }
 
                 if (!r.IsOk)

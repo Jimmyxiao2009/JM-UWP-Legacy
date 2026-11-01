@@ -104,14 +104,15 @@ namespace Jm.Core
 
         /// <summary>
         /// 站内搜索。orderBy 传 <see cref="JmSearchOrder"/> 里的值改变排序（null/空=综合，不传 o）。
-        /// 标签的“包含/排除”直接写进 query：空格分隔表示同时包含，前缀 '-' 表示排除，
+        /// category 传 <see cref="JmCategory"/> 里的值筛选分类（null/空/0=全部）。
+        /// 标签的"包含/排除"直接写进 query：空格分隔表示同时包含，前缀 '-' 表示排除，
         /// 例如 "排球 -人妻 -3D"。
         /// </summary>
-        public Task<JmApiResult> SearchAsync(string query, int page = 1, string orderBy = null, CancellationToken ct = default)
+        public Task<JmApiResult> SearchAsync(string query, int page = 1, string orderBy = null, string category = null, CancellationToken ct = default)
         {
             var q = new Dictionary<string, string>
             {
-                ["main_tag"] = "0",
+                ["main_tag"] = string.IsNullOrEmpty(category) ? "0" : category,
                 ["search_query"] = query,
                 ["page"] = page.ToString(),
             };

@@ -10,7 +10,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Jm.Uwp
 {
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage : Page, IBackHandler
     {
         private readonly JmClient _client = App.Jm;
         private bool _initialized;
@@ -22,6 +22,8 @@ namespace Jm.Uwp
         public MainPage()
         {
             InitializeComponent();
+            // Returning from a comic must restore its source tab and search results.
+            NavigationCacheMode = NavigationCacheMode.Required;
             FavGrid.ItemsSource = Favorites;
             HistGrid.ItemsSource = History;
             DlGrid.ItemsSource = Downloads;
@@ -39,6 +41,14 @@ namespace Jm.Uwp
 
         private async void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
             => await ReloadCurrentTabAsync();
+
+        public bool HandleBack()
+        {
+            if (AdvPanel.Visibility != Visibility.Visible) return false;
+            AdvToggle.IsChecked = false;
+            AdvPanel.Visibility = Visibility.Collapsed;
+            return true;
+        }
 
         private async System.Threading.Tasks.Task ReloadCurrentTabAsync()
         {
@@ -106,6 +116,13 @@ namespace Jm.Uwp
             if (ResultGrid.ItemsSource is IncrementalSearchSource) DoSearch();
         }
 
+        private void CategoryBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // 改了分类：若已有搜索结果，按新分类重搜一次
+            if (!_initialized) return;
+            if (ResultGrid.ItemsSource is IncrementalSearchSource) DoSearch();
+        }
+
         private void DoSearch()
         {
             var query = BuildQuery();
@@ -118,7 +135,7 @@ namespace Jm.Uwp
             }
 
             // 增量加载集合：控件滚到底会自动调 LoadMoreItemsAsync 拉下一页
-            var source = new IncrementalSearchSource(_client, query, GetOrderBy())
+            var source = new IncrementalSearchSource(_client, query, GetOrderBy(), GetCategory())
             {
                 StatusChanged = s => StatusText.Text = s
             };
@@ -159,6 +176,19 @@ namespace Jm.Uwp
                 case 3: return JmSearchOrder.Like;
                 case 4: return JmSearchOrder.Picture;
                 default: return null; // 综合
+            }
+        }
+
+        private string GetCategory()
+        {
+            switch (CategoryBox.SelectedIndex)
+            {
+                case 1: return JmCategory.Doujinshi;
+                case 2: return JmCategory.Single;
+                case 3: return JmCategory.Short;
+                case 4: return JmCategory.CG;
+                case 5: return JmCategory.Cosplay;
+                default: return JmCategory.All; // 全部
             }
         }
 

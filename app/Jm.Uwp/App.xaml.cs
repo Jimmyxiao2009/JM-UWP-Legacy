@@ -49,11 +49,19 @@ namespace Jm.Uwp
 
         private void OnBackRequested(object sender, BackRequestedEventArgs e)
         {
+            if (e.Handled) return;
+            var handler = (Window.Current.Content as Frame)?.Content as IBackHandler;
+            if (handler != null && handler.HandleBack()) { e.Handled = true; return; }
             if (Window.Current.Content is Frame frame && frame.CanGoBack)
             {
                 e.Handled = true;   // App 内返回上一页，而不是退出到系统主页
                 frame.GoBack();
             }
         }
+    }
+
+    public interface IBackHandler
+    {
+        bool HandleBack();
     }
 }

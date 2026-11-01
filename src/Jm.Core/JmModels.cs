@@ -19,13 +19,24 @@ namespace Jm.Core
         public override void WriteJson(JsonWriter w, string v, JsonSerializer s) => w.WriteValue(v);
     }
 
-    /// <summary>搜索排序方式（API 的 o 参数值）。空/null 表示“综合”（不传 o）。</summary>
+    /// <summary>搜索排序方式（API 的 o 参数值）。空/null 表示"综合"（不传 o）。</summary>
     public static class JmSearchOrder
     {
         public const string Latest = "mr";   // 最新
         public const string View = "mv";     // 最多点阅
         public const string Like = "tf";     // 最多爱心
         public const string Picture = "mp";  // 最多图片
+    }
+
+    /// <summary>分类标签（API 的 main_tag 参数值）。</summary>
+    public static class JmCategory
+    {
+        public const string All = "0";           // 全部
+        public const string Doujinshi = "1";     // 同人志
+        public const string Single = "2";        // 单行本
+        public const string Short = "3";         // 短篇
+        public const string CG = "4";            // CG
+        public const string Cosplay = "5";       // Cosplay
     }
 
     /// <summary>搜索结果页。</summary>

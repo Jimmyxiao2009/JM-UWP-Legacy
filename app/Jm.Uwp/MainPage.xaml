@@ -81,15 +81,25 @@
                                 FontSize="16" Click="SearchButton_Click" />
                     </Grid>
 
-                    <!-- 排序 + 高级 + 视图切换 -->
+                    <!-- 分类 + 排序 + 高级 + 视图切换 -->
                     <Grid Grid.Row="1" Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <ComboBox x:Name="OrderBox" Grid.Column="0" SelectedIndex="0" Width="124"
+                        <ComboBox x:Name="CategoryBox" Grid.Column="0" SelectedIndex="0" Width="100"
+                                  SelectionChanged="CategoryBox_SelectionChanged">
+                            <ComboBoxItem Content="全部" />
+                            <ComboBoxItem Content="同人志" />
+                            <ComboBoxItem Content="单行本" />
+                            <ComboBoxItem Content="短篇" />
+                            <ComboBoxItem Content="CG" />
+                            <ComboBoxItem Content="Cosplay" />
+                        </ComboBox>
+                        <ComboBox x:Name="OrderBox" Grid.Column="1" SelectedIndex="0" Width="110" Margin="8,0,0,0"
                                   SelectionChanged="OrderBox_SelectionChanged">
                             <ComboBoxItem Content="综合" />
                             <ComboBoxItem Content="最新" />
@@ -97,9 +107,9 @@
                             <ComboBoxItem Content="最多爱心" />
                             <ComboBoxItem Content="最多图片" />
                         </ComboBox>
-                        <ToggleButton x:Name="AdvToggle" Grid.Column="1" Content="高级" Margin="8,0,0,0"
+                        <ToggleButton x:Name="AdvToggle" Grid.Column="2" Content="高级" Margin="8,0,0,0"
                                       Checked="AdvToggle_Toggled" Unchecked="AdvToggle_Toggled" />
-                        <Button x:Name="ViewToggle" Grid.Column="3" Content="列表" Width="56"
+                        <Button x:Name="ViewToggle" Grid.Column="4" Content="列表" Width="56"
                                 Click="ViewToggle_Click" />
                     </Grid>
 

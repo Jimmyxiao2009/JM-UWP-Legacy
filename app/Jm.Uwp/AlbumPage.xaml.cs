@@ -15,6 +15,7 @@ namespace Jm.Uwp
         public AlbumPage()
         {
             InitializeComponent();
+            NavigationCacheMode = NavigationCacheMode.Enabled;
             ChapterList.ItemsSource = Chapters;
         }
 
@@ -26,6 +27,13 @@ namespace Jm.Uwp
                 TitleText.Text = "无效的专辑 id";
                 return;
             }
+
+            if (e.NavigationMode == NavigationMode.Back && _album != null && _album.Id == id)
+            {
+                UpdateFavButton(await LibraryStore.IsFavoriteAsync(_album.Id));
+                return;
+            }
+            Chapters.Clear();
 
             Busy.IsActive = true;
             try

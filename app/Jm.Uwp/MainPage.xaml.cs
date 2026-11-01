@@ -44,7 +44,7 @@ namespace Jm.Uwp
 
         public bool HandleBack()
         {
-            if (AdvPanel.Visibility != Visibility.Visible) return false;
+            if (RootPivot.SelectedIndex != 0 || AdvPanel.Visibility != Visibility.Visible) return false;
             AdvToggle.IsChecked = false;
             AdvPanel.Visibility = Visibility.Collapsed;
             return true;
